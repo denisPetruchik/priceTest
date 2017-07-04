@@ -26,7 +26,7 @@ class PrahaSpider(CrawlSpider):
     def __init__(self):
         CrawlSpider.__init__(self)
         # use any browser you wish
-        self.browser = webdriver.Chrome('/Users/denispetruchik/Downloads/chromedriver') 
+        self.browser = webdriver.Chrome('~/Downloads/chromedriver') 
 
     def __del__(self):
         self.browser.close()
