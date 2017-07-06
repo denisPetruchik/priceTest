@@ -8,6 +8,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import json
+import os
+
 
 
 class product_spiderItem(scrapy.Item):
@@ -36,8 +38,10 @@ class PrahaSpider(CrawlSpider):
     def __init__(self):
         CrawlSpider.__init__(self)
         # use any browser you wish
-        self.browser = webdriver.Chrome(
-            '/Users/denispetruchik/Downloads/chromedriver')
+        if os.name == 'nt':
+            self.browser = webdriver.Chrome('C:\\Users\\re7\\Downloads\\chromedriver')
+        else:
+            self.browser = webdriver.Chrome('/Users/denispetruchik/Downloads/chromedriver')
 
     def __del__(self):
     	print 'close'
@@ -45,6 +49,7 @@ class PrahaSpider(CrawlSpider):
 
     def parse(self, response):
         self.browser.get(response.url)
+        self.browser.implicitly_wait(5)
         # let JavaScript Load
         test_element = WebDriverWait(self.browser, 10).until(
             EC.visibility_of_element_located((By.CLASS_NAME, "ng-scope")))
@@ -54,9 +59,10 @@ class PrahaSpider(CrawlSpider):
             self.parse_byt(i, items)
             
         nextPage = 2
-        page_to_parse = 10
+        page_to_parse = 35
         while (nextPage < page_to_parse):
             self.browser.get(response.url + '?strana=' + str(nextPage))
+            self.browser.implicitly_wait(5)
             # let JavaScript Load
             test_element = WebDriverWait(self.browser, 10).until(
                 EC.visibility_of_element_located((By.CLASS_NAME, "ng-scope")))
