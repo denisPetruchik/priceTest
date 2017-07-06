@@ -25,6 +25,7 @@ class product_spiderItem(scrapy.Item):
     plocha = scrapy.Field()
     podlazi = scrapy.Field()
     novostavba = scrapy.Field()
+    stavOb = scrapy.Field()
     pass
 
 
@@ -59,7 +60,7 @@ class PrahaSpider(CrawlSpider):
             self.parse_byt(i, items)
             
         nextPage = 2
-        page_to_parse = 35
+        page_to_parse = 50
         while (nextPage < page_to_parse):
             self.browser.get(response.url + '?strana=' + str(nextPage))
             self.browser.implicitly_wait(5)
@@ -112,4 +113,18 @@ class PrahaSpider(CrawlSpider):
             if text.find(u'podlaží z celkem') > -1:
                 i['podlazi'] = text
                 nextParse = True
+            if text.find(u'Velmi dobrý') >-1:
+                i['stavOb']='veryGood'
+            if text.find(u'Po rekonstrukci') >-1:
+                i['stavOb']='afterRec'
+            if text.find(u'Dobrý') >-1:
+                i['stavOb']='good'
+            if text.find(u'Novostavba') >-1:
+                i['stavOb']='Novostavba'
+            if text.find(u'Před rekonstrukcí') >-1:
+                i['stavOb']='beforeRec'
+            if text.find(u'Špatný') >-1:
+                i['stavOb']='bad'
+            if text.find(u'Developerské projekty') >-1:
+                i['stavOb']='inDev'
         return i
