@@ -107,7 +107,7 @@ def fill_missing_age(df):
     return df
 
 # Convert categorical features using one-hot encoding.
-def onehot(onehot_df, df, column_name, fill_na, drop_name):
+def onehot(onehot_df, df, column_name, fill_na=None, drop_name=None):
     onehot_df[column_name] = df[column_name]
     if fill_na is not None:
         onehot_df[column_name].fillna(fill_na, inplace=True)
@@ -171,9 +171,12 @@ def processX(X):
     
     std_scale = preprocessing.StandardScaler().fit(X[['Age', 'Fare']])
     X[['Age', 'Fare']] = std_scale.transform(X[['Age', 'Fare']])    
-    
-    X.drop({'Deck','Ticket', 'Family','Cabin','SibSp', 'Parch', 'Name'}, axis = 1, inplace = True)
-    X_prev = X.copy()
+#    X = onehot(X, X, 'Deck')    
+    X = onehot(X, X, 'FareCl')
+    X = onehot(X, X, 'Title')
+    X.drop({'Ticket', 'Family','Cabin','SibSp', 'Parch', 'Name'}, axis = 1, inplace = True)
+
+#    X_prev = X.copy()
     
     
 #    X,e = encode_with_OneHotEncoder_and_delete_column(X,'Person')
@@ -181,9 +184,9 @@ def processX(X):
 #    X,e = encode_with_OneHotEncoder_and_delete_column(X,'Sex')
 #    X,e = encode_with_OneHotEncoder_and_delete_column(X,'Embarked')
 #    X,e = encode_with_OneHotEncoder_and_delete_column(X,'Title')
-    return X, X_prev    
+    return X
 
-X,X_prev = processX(X)
+X = processX(X)
 #plot_correlation_map(X, y)
 seed = 7
 test_size = 0.33
@@ -200,7 +203,6 @@ model = XGBClassifier(base_score=0.5, colsample_bylevel=1, colsample_bytree=1,
        scale_pos_weight=1, seed=42, silent=True, subsample=1)
 
 plot_learning_curve(model, 'XGBClassifier', X, y, cv=4);
-print cross_val_score(model, X, y, scoring='precision', cv=4).mean()
 model = model.fit(X,y)
 print model.booster().get_fscore()
 
@@ -247,7 +249,7 @@ print("Accuracy cb: %.2f%%" % (accuracy_score(y_test, predictions) * 100.0))
 
 df = pd.read_csv('/Users/denispetruchik/Downloads/test.csv')
 X_load = df.drop({'PassengerId'}, axis = 1)
-X_pred,X_prev = processX(X_load) 
+X_pred = processX(X_load) 
 predictions = random_forest.predict(X_pred)
 StackingSubmission = pd.DataFrame({ 'PassengerId': df['PassengerId'],'Survived': predictions })
 StackingSubmission.to_csv("Submission_rf.csv", index=False)
